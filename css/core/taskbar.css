@@ -11,11 +11,11 @@
 
 .task-btn {
   position: relative;
-  width: 38px; height: 38px;
-  display: flex; align-items: center; justify-content: center;
+  height: 38px;
+  display: flex; align-items: center; gap: 6px;
   border: none; border-radius: 8px; cursor: pointer;
   background: var(--btn);
-  padding: 0;
+  padding: 0 10px 0 5px;
 }
 
 .task-btn:hover { background: var(--btn-hover); }
@@ -29,18 +29,20 @@
 
 .task-btn .tile svg { width: 15px; height: 15px; }
 
+.task-label { font-size: .78rem; color: var(--fg); }
+
 .task-btn::after {
   content: "";
   position: absolute; bottom: 1px; left: 50%;
   transform: translateX(-50%);
-  width: 4px; height: 4px; border-radius: 50%;
+  width: 4px; height: 2px; border-radius: 2px;
   background: var(--muted);
   opacity: 0;
   transition: all .15s;
 }
 
 .task-btn.has::after { opacity: 1; }
-.task-btn.active::after { width: 14px; border-radius: 2px; background: var(--accent); }
+.task-btn.active::after { width: calc(100% - 16px); background: var(--accent); }
 
 .task-clock {
   margin-left: auto;

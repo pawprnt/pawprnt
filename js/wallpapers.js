@@ -72,38 +72,3 @@ function applyWallpaper(id) {
 function savedWallpaper() {
   try { return localStorage.getItem(WP_KEY); } catch (e) { return null; }
 }
-
-function initWallpapers(container) {
-  injectWpKeyframes();
-  const wrap = document.createElement("div");
-  wrap.className = "wp-wrap";
-  const hint = document.createElement("div");
-  hint.className = "wp-hint";
-  hint.textContent = "click to change the desktop";
-  const grid = document.createElement("div");
-  grid.className = "wp-grid";
-  const current = savedWallpaper() || "forest";
-  for (const wp of WALLPAPERS) {
-    const cell = document.createElement("div");
-    cell.className = "wp-cell";
-    if (wp.id === current) cell.classList.add("active");
-    const thumb = document.createElement("div");
-    thumb.className = "wp-thumb";
-    thumb.style.background = wp.css;
-    if (wp.anim) thumb.style.animation = wp.anim;
-    const name = document.createElement("div");
-    name.className = "wp-name";
-    name.textContent = wp.name;
-    cell.appendChild(thumb);
-    cell.appendChild(name);
-    cell.addEventListener("click", () => {
-      applyWallpaper(wp.id);
-      grid.querySelectorAll(".wp-cell").forEach((c) => c.classList.remove("active"));
-      cell.classList.add("active");
-    });
-    grid.appendChild(cell);
-  }
-  wrap.appendChild(hint);
-  wrap.appendChild(grid);
-  container.appendChild(wrap);
-}

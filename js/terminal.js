@@ -52,7 +52,7 @@ function initTerminal(container) {
           ["pwd", "print working dir"],
           ["whoami", "who am i"],
           ["echo <text>", "print text"],
-          ["open <app>", "open an app (terminal, files, about, projects)"],
+          ["open <app>", "open an app (terminal, files, about, projects, settings)"],
           ["date", "show the date"],
           ["clear", "clear the screen"],
           ["exit", "close this window"],

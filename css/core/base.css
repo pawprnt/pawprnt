@@ -67,6 +67,42 @@ body {
 
 .hidden { display: none !important; }
 
+[data-motion="off"] *,
+[data-motion="off"] *::before,
+[data-motion="off"] *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+[data-blur="off"] #taskbar {
+  backdrop-filter: none;
+  background: var(--bg2);
+}
+
+[data-corners="off"] .win,
+[data-corners="off"] .win-titlebar,
+[data-corners="off"] .win-body,
+[data-corners="off"] .win-dot,
+[data-corners="off"] .task-btn,
+[data-corners="off"] .tile,
+[data-corners="off"] .st-card,
+[data-corners="off"] .st-art,
+[data-corners="off"] .st-pbar,
+[data-corners="off"] .st-ic,
+[data-corners="off"] .swatch,
+[data-corners="off"] .custom-color,
+[data-corners="off"] .theme-btn,
+[data-corners="off"] .set-row,
+[data-corners="off"] .set-toggle,
+[data-corners="off"] .set-toggle::after,
+[data-corners="off"] .set-wp-thumb,
+[data-corners="off"] .files-row,
+[data-corners="off"] .files-dir,
+[data-corners="off"] .boot-fill,
+[data-corners="off"] .st-ptime {
+  border-radius: 0 !important;
+}
+
 /* ---------- desktop ---------- */
 
 #desktop {

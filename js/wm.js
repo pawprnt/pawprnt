@@ -1,8 +1,10 @@
 const WM = (() => {
   const WIN_CLOSE_MS = 160;
+  const WIN_GEO_MS = 180;
   const layer = document.getElementById("windows");
   const wins = new Map();
   const listeners = new Set();
+  const prevRect = new WeakMap();
   let z = 10;
   let count = 0;
   let focusedEl = null;
@@ -16,12 +18,94 @@ const WM = (() => {
   }
 
   function focus(winEl) {
-    for (const el of wins.values()) el.classList.remove("focused");
+    for (const el of wins.keys()) el.classList.remove("focused");
     winEl.classList.add("focused");
     focusedEl = winEl;
     z++;
     winEl.style.zIndex = z;
     notify();
+  }
+
+  function motionOn() {
+    return document.documentElement.dataset.motion !== "off";
+  }
+
+  function geom(el) {
+    const r = el.getBoundingClientRect();
+    return { left: r.left, top: r.top, width: r.width, height: r.height };
+  }
+
+  function setGeom(el, r) {
+    el.style.left = r.left + "px";
+    el.style.top = r.top + "px";
+    el.style.width = r.width + "px";
+    el.style.height = r.height + "px";
+  }
+
+  function fullGeom() {
+    return { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight - 46 };
+  }
+
+  function animateGeom(el, from, to) {
+    if (!motionOn()) {
+      setGeom(el, to);
+      return;
+    }
+    const anim = el.animate(
+      [
+        { left: from.left + "px", top: from.top + "px", width: from.width + "px", height: from.height + "px" },
+        { left: to.left + "px", top: to.top + "px", width: to.width + "px", height: to.height + "px" },
+      ],
+      { duration: WIN_GEO_MS, easing: "cubic-bezier(.33,1,.68,1)" }
+    );
+    anim.onfinish = () => setGeom(el, to);
+  }
+
+  function toggleMaximize(winEl) {
+    if (winEl.classList.contains("closing")) return;
+    if (winEl.classList.contains("maximized")) {
+      winEl.classList.remove("maximized");
+      const prev = prevRect.get(winEl) || geom(winEl);
+      prevRect.delete(winEl);
+      animateGeom(winEl, geom(winEl), prev);
+    } else {
+      prevRect.set(winEl, geom(winEl));
+      winEl.classList.add("maximized");
+      animateGeom(winEl, geom(winEl), fullGeom());
+    }
+  }
+
+  function minimize(winEl) {
+    if (winEl.classList.contains("hidden") || winEl.classList.contains("closing")) return;
+    const r = winEl.getBoundingClientRect();
+    const ty = window.innerHeight - 23 - (r.top + r.height / 2);
+    if (!motionOn()) {
+      winEl.classList.add("hidden");
+      return;
+    }
+    const anim = winEl.animate(
+      [
+        { transform: "translate(0,0) scale(1)", opacity: 1 },
+        { transform: "translate(0," + ty + "px) scale(.05)", opacity: 0 },
+      ],
+      { duration: WIN_GEO_MS, easing: "cubic-bezier(.33,1,.68,1)" }
+    );
+    anim.onfinish = () => winEl.classList.add("hidden");
+  }
+
+  function restore(winEl) {
+    if (!winEl.classList.contains("hidden")) return;
+    winEl.classList.remove("hidden");
+    const r = winEl.getBoundingClientRect();
+    const ty = window.innerHeight - 23 - (r.top + r.height / 2);
+    if (!motionOn()) return;
+    winEl.animate(
+      [
+        { transform: "translate(0," + ty + "px) scale(.05)", opacity: 0 },
+        { transform: "translate(0,0) scale(1)", opacity: 1 },
+      ],
+      { duration: WIN_GEO_MS, easing: "cubic-bezier(.33,1,.68,1)" }
+    );
   }
 
   function makeWin({ title, width, height, body, noPad }) {
@@ -37,9 +121,9 @@ const WM = (() => {
     el.innerHTML =
       '<div class="win-titlebar">' +
       '<div class="win-title"></div>' +
-      '<button class="wbtn min" title="minimize"></button>' +
-      '<button class="wbtn max" title="maximize"></button>' +
-      '<button class="wbtn close" title="close"></button>' +
+      '<button class="wbtn min" title="minimize">−</button>' +
+      '<button class="wbtn max" title="maximize">+</button>' +
+      '<button class="wbtn close" title="close">×</button>' +
       "</div>" +
       '<div class="win-body ' + (noPad ? "no-pad" : "") + '"></div>';
 
@@ -60,11 +144,11 @@ const WM = (() => {
     });
     el.querySelector(".wbtn.max").addEventListener("click", (e) => {
       e.stopPropagation();
-      el.classList.toggle("maximized");
+      toggleMaximize(el);
     });
     el.querySelector(".wbtn.min").addEventListener("click", (e) => {
       e.stopPropagation();
-      el.classList.add("hidden");
+      minimize(el);
     });
 
     bar.addEventListener("mousedown", (e) => {
@@ -102,5 +186,5 @@ const WM = (() => {
     return { el, bodyEl };
   }
 
-  return { makeWin, layer, focus, onChanged, focusedEl: () => focusedEl };
+  return { makeWin, layer, focus, minimize, restore, toggleMaximize, onChanged, focusedEl: () => focusedEl };
 })();

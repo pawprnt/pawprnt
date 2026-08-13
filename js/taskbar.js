@@ -34,12 +34,15 @@ function initTaskbar() {
       app.tile +
       '">' +
       ICONS[app.icon] +
-      "</div>";
+      "</div>" +
+      '<span class="task-label">' +
+      app.name +
+      "</span>";
     btn.addEventListener("click", () => {
       const wins = (OPEN[key] || []).filter((el) => el.isConnected);
       if (wins.length) {
         const el = wins[wins.length - 1];
-        el.classList.remove("hidden");
+        WM.restore(el);
         WM.focus(el);
       } else {
         openApp(key);

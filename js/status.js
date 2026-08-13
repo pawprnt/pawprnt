@@ -116,7 +116,7 @@ function initStatus(container) {
     const status = document.createElement("div");
     status.className = "st-card";
     status.innerHTML =
-      '<div class="st-badge"><span class="st-live"></span> status</div>' +
+      '<div class="st-badge">status</div>' +
       '<div class="st-status-line">for me its currently <span class="st-time">--:-- --</span> ' +
       'and im <span class="st-now st-now-offline">offline</span></div>';
     left.appendChild(status);
@@ -311,5 +311,5 @@ function initStatus(container) {
       return;
     }
     load();
-  }, 30000);
+  }, 10000);
 }

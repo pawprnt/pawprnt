@@ -9,7 +9,7 @@ const ACCENTS = [
   { name: "coral", value: "#ff8f8a" },
 ];
 
-const DEFAULT_SETTINGS = { accent: "#c7a2ff", theme: "dark" };
+const DEFAULT_SETTINGS = { accent: "#c7a2ff", theme: "dark", motion: true, corners: true, blur: true };
 
 function loadSettings() {
   try {
@@ -25,8 +25,12 @@ function saveSettings(s) {
 
 function applySettings(s) {
   const set = s || loadSettings();
-  document.documentElement.dataset.theme = set.theme;
-  document.documentElement.style.setProperty("--accent", set.accent);
+  const root = document.documentElement;
+  root.dataset.theme = set.theme;
+  root.style.setProperty("--accent", set.accent);
+  root.dataset.motion = set.motion ? "on" : "off";
+  root.dataset.corners = set.corners ? "on" : "off";
+  root.dataset.blur = set.blur ? "on" : "off";
   return set;
 }
 
@@ -101,6 +105,60 @@ function initSettings(container) {
     themeRow.appendChild(b);
   });
   themeSec.appendChild(themeRow);
+
+  const toggleRow = (label, value, on) => {
+    const row = document.createElement("div");
+    row.className = "set-row";
+    const lab = document.createElement("div");
+    lab.className = "set-row-label";
+    lab.textContent = label;
+    const sw = document.createElement("button");
+    sw.className = "set-toggle";
+    sw.type = "button";
+    sw.setAttribute("role", "switch");
+    sw.setAttribute("aria-checked", String(value));
+    if (value) sw.classList.add("on");
+    sw.addEventListener("click", () => {
+      value = !value;
+      sw.classList.toggle("on", value);
+      sw.setAttribute("aria-checked", String(value));
+      on(value);
+    });
+    row.appendChild(lab);
+    row.appendChild(sw);
+    return row;
+  };
+
+  const motionSec = sec("motion");
+  motionSec.appendChild(toggleRow("animations", current.motion, (v) => {
+    current.motion = v;
+    applySettings(current);
+    saveSettings(current);
+  }));
+
+  const cornersSec = sec("corners");
+  cornersSec.appendChild(toggleRow("rounded corners", current.corners, (v) => {
+    current.corners = v;
+    applySettings(current);
+    saveSettings(current);
+  }));
+
+  const blurSec = sec("blur");
+  blurSec.appendChild(toggleRow("blur + transparency", current.blur, (v) => {
+    current.blur = v;
+    applySettings(current);
+    saveSettings(current);
+  }));
+
+  const resetSec = sec("reset");
+  const resetBtn = document.createElement("button");
+  resetBtn.className = "theme-btn";
+  resetBtn.textContent = "reset to defaults";
+  resetBtn.addEventListener("click", () => {
+    saveSettings(Object.assign({}, DEFAULT_SETTINGS));
+    location.reload();
+  });
+  resetSec.appendChild(resetBtn);
 
   const wallSec = sec("wallpaper");
   const wallGrid = document.createElement("div");
