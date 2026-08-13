@@ -1,0 +1,22 @@
+.term {
+  background: var(--term-bg);
+  height: 100%; overflow-y: auto;
+  padding: 10px 12px;
+  font-size: .85rem;
+  user-select: text;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.term .c-pink { color: var(--pink); }
+.term .c-accent { color: var(--accent); }
+.term .c-green { color: var(--green); }
+.term .c-dim { color: var(--dim); }
+.term .c-red { color: #ff8f8a; }
+.term .c-yellow { color: var(--yellow); }
+
+.term-line { display: flex; gap: .4em; }
+.term-prompt { color: var(--accent); white-space: nowrap; }
+.term-input { flex: 1; outline: none; caret-color: var(--pink); }
+
+.term .ascii { color: var(--accent); font-size: .72rem; line-height: 1.25; user-select: none; }

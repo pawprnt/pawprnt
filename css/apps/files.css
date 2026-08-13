@@ -1,0 +1,35 @@
+.files { display: flex; height: 100%; }
+
+.files-side {
+  width: 150px; flex-shrink: 0;
+  border-right: 1px solid var(--win-border);
+  padding: 8px; overflow-y: auto;
+}
+
+.files-side .dir {
+  padding: 4px 8px; border-radius: 6px; cursor: pointer;
+  color: var(--muted); font-size: .8rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.files-side .dir:hover { background: var(--hover); }
+.files-side .dir.active { background: var(--active2); color: var(--fg); }
+.files-side .dir .mark { color: var(--accent); margin-right: 4px; }
+
+.files-main { flex: 1; overflow-y: auto; padding: 8px; }
+
+.files-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 8px; border-radius: 6px; cursor: pointer;
+  font-size: .8rem;
+}
+
+.files-row:hover { background: var(--hover); }
+
+.files-row .glyph {
+  width: 18px; text-align: center; color: var(--accent);
+}
+
+.files-row.dir .glyph { color: var(--yellow); }
+
+.files-row .size { margin-left: auto; color: var(--dim); font-size: .72rem; }

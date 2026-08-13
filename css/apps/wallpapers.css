@@ -1,0 +1,31 @@
+.wp-wrap { padding: 10px; height: 100%; overflow-y: auto; }
+
+.wp-hint { color: var(--dim); font-size: .75rem; margin-bottom: 10px; }
+
+.wp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: 10px;
+}
+
+.wp-cell { cursor: pointer; }
+
+.wp-cell:hover .wp-thumb { border-color: var(--muted); }
+
+.wp-thumb {
+  height: 62px;
+  border-radius: 8px;
+  border: 1px solid var(--win-border);
+}
+
+.wp-cell.active .wp-thumb {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.wp-name {
+  font-size: .68rem; color: var(--muted); text-align: center;
+  margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.wp-cell.active .wp-name { color: var(--accent); }

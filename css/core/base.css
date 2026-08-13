@@ -1,0 +1,86 @@
+:root {
+  --bg: #0e0e12;
+  --bg2: #12121a;
+  --fg: #e8e6ea;
+  --dim: #6b6974;
+  --muted: #9c98b0;
+  --accent: #c7a2ff;
+  --pink: #ff9dd2;
+  --green: #9be0a8;
+  --win: #16161e;
+  --win-border: #262634;
+  --term-bg: #0b0b10;
+  --red: #ff5f57;
+  --yellow: #febc2e;
+  --green-dot: #28c840;
+  --surface2: #1c1c26;
+  --bar: rgba(14,14,18,.85);
+  --btn: rgba(255,255,255,.04);
+  --btn-hover: rgba(255,255,255,.1);
+  --hover: rgba(255,255,255,.06);
+  --active: color-mix(in srgb, var(--accent) 22%, transparent);
+  --active2: color-mix(in srgb, var(--accent) 16%, transparent);
+  --glow: color-mix(in srgb, var(--accent) 22%, transparent);
+  --ov1: rgba(42,33,64,.35);
+  --ov2: rgba(28,36,54,.4);
+  --ov3: rgba(0,0,0,.25);
+  --shadow: rgba(0,0,0,.5);
+  --shadow2: rgba(0,0,0,.55);
+}
+
+[data-theme="light"] {
+  --bg: #f3f1f8;
+  --bg2: #eae8f2;
+  --fg: #201d2b;
+  --dim: #7b7890;
+  --muted: #5a576e;
+  --win: #ffffff;
+  --win-border: #d6d3e2;
+  --term-bg: #f7f6fb;
+  --surface2: #eceaf4;
+  --pink: #d63384;
+  --green: #1f9d55;
+  --yellow: #b58900;
+  --bar: rgba(250,249,253,.85);
+  --btn: rgba(0,0,0,.05);
+  --btn-hover: rgba(0,0,0,.09);
+  --hover: rgba(0,0,0,.06);
+  --ov1: rgba(150,140,200,.18);
+  --ov2: rgba(210,200,240,.25);
+  --ov3: rgba(255,255,255,.15);
+  --shadow: rgba(30,25,50,.22);
+  --shadow2: rgba(30,25,50,.28);
+}
+
+* { box-sizing: border-box; margin: 0; }
+
+html, body { height: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: ui-monospace, "Cascadia Code", Menlo, Consolas, monospace;
+  line-height: 1.55;
+  overflow: hidden;
+  user-select: none;
+}
+
+.hidden { display: none !important; }
+
+/* ---------- desktop ---------- */
+
+#desktop {
+  position: fixed; inset: 0;
+  background: var(--bg);
+}
+
+#desktop::before {
+  content: "";
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, var(--ov1) 0%, transparent 60%),
+    radial-gradient(900px 500px at 0% 110%, var(--ov2) 0%, transparent 60%),
+    var(--ov3);
+}
+
+#windows { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
