@@ -1,7 +1,7 @@
 .files { display: flex; height: 100%; }
 
 .files-side {
-  width: 150px; flex-shrink: 0;
+  width: 200px; flex-shrink: 0;
   border-right: 1px solid var(--win-border);
   padding: 8px; overflow-y: auto;
 }

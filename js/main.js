@@ -1,9 +1,14 @@
 window.addEventListener("DOMContentLoaded", () => {
-  runBoot(() => {
+  applySettings();
+  applyWallpaper(savedWallpaper() || "forest");
+  const enter = () => {
     document.getElementById("boot").remove();
-    applySettings();
-    applyWallpaper(savedWallpaper() || "forest");
     document.getElementById("desktop").hidden = false;
     renderDesktop();
-  });
+  };
+  if (loadSettings().boot === false) {
+    enter();
+  } else {
+    runBoot(enter);
+  }
 });

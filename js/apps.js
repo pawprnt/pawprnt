@@ -115,8 +115,8 @@ const APPS = {
     open: () => {
       const w = WM.makeWin({
         title: "settings",
-        width: 480,
-        height: 420,
+    width: 640,
+    height: 460,
         noPad: true,
       });
       initSettings(w.bodyEl);
@@ -187,7 +187,7 @@ function initFiles(container) {
     const node = resolvePath(base, "/");
     if (!node) return out;
     for (const k of Object.keys(node)) {
-      const child = base + "/" + k;
+      const child = (base === "/" ? "" : base) + "/" + k;
       if (nodeIsDir(node[k])) {
         out.push(child);
         out.push(...collectDirs(child, prefix));
@@ -201,7 +201,7 @@ function initFiles(container) {
     const el = document.createElement("div");
     el.className = "dir";
     el.dataset.path = d;
-    const label = d === "/" ? "/ (root)" : d.split("/").slice(0, -1).join("/") + " " + d.split("/").pop();
+    const label = d === "/" ? "/ (root)" : d;
     el.innerHTML = '<span class="mark">▸</span>' + label;
     el.addEventListener("click", () => {
       renderDir(d);

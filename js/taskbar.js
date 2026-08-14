@@ -54,13 +54,16 @@ function initTaskbar() {
   const clock = document.createElement("div");
   clock.className = "task-clock";
   const tick = () => {
+    const h24 = typeof loadSettings === "function" && loadSettings().clock24;
     clock.textContent = new Date().toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
+      hour12: !h24,
     });
   };
   tick();
   setInterval(tick, 10000);
+  window.__tickTaskClock = tick;
   bar.appendChild(clock);
 
   WM.onChanged(syncTaskbar);

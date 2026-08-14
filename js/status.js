@@ -94,6 +94,22 @@ function stLookupArt(song, artist, cb) {
     .catch(() => {});
 }
 
+const STATUS_POLL_MS = 10000;
+let statusState = null;
+const statusSubs = new Set();
+
+function statusPoll() {
+  const lfP = stFetchLf().catch(() => null);
+  const lanP = stFetchLanyard().catch(() => null);
+  Promise.all([lfP, lanP]).then(([lf, lanyard]) => {
+    if (lf || lanyard || !statusState) statusState = { lf, lanyard };
+    statusSubs.forEach((fn) => fn(statusState));
+  });
+}
+
+statusPoll();
+setInterval(statusPoll, STATUS_POLL_MS);
+
 function initStatus(container) {
   const wrap = document.createElement("div");
   wrap.className = "st-wrap";
@@ -124,11 +140,12 @@ function initStatus(container) {
     const updateClock = () => {
       const now = new Date();
       timeEl.textContent = new Intl.DateTimeFormat("en-US", {
-        timeZone: "America/Chicago", hour: "numeric", minute: "2-digit", hour12: true,
+        timeZone: "America/Chicago", hour: "numeric", minute: "2-digit", hour12: !loadSettings().clock24,
       }).format(now);
     };
     updateClock();
     clockTimer = setInterval(updateClock, 1000);
+    window.__tickStatusClock = updateClock;
     statusNow = status.querySelector(".st-now");
   }
 
@@ -258,7 +275,10 @@ function initStatus(container) {
     const btn = document.createElement("button");
     btn.className = "st-btn";
     btn.textContent = "retry";
-    btn.addEventListener("click", load);
+    btn.addEventListener("click", () => {
+      statusPoll();
+      render();
+    });
     foot.appendChild(btn);
     c.appendChild(foot);
     return c;
@@ -282,34 +302,35 @@ function initStatus(container) {
     }
   }
 
-  async function load() {
-    rightMusic.textContent = "";
-    const loading = document.createElement("div");
-    loading.className = "st-card";
-    loading.textContent = "loading...";
-    rightMusic.appendChild(loading);
-    const lfP = stFetchLf().catch(() => null);
-    const lanP = stFetchLanyard().catch(() => null);
-    const lf = await lfP;
+  function render() {
+    if (!statusState) {
+      rightMusic.textContent = "";
+      const loading = document.createElement("div");
+      loading.className = "st-card";
+      loading.textContent = "loading...";
+      rightMusic.appendChild(loading);
+      return;
+    }
+    const { lf, lanyard } = statusState;
     if (lf && lf.nowplaying) {
       renderRight({}, lf);
+      if (lanyard) setStatus(lanyard.discord_status || "offline");
     } else {
-      const d = await lanP;
-      renderRight(d || {}, lf);
+      renderRight(lanyard || {}, lf);
+      if (lanyard) setStatus(lanyard.discord_status || "offline");
     }
-    const d = await lanP;
-    if (d) setStatus(d.discord_status || "offline");
   }
 
   statusCard();
-  load();
-  const poll = setInterval(() => {
+  render();
+  statusSubs.add(render);
+  const check = setInterval(() => {
     if (!container.isConnected) {
-      clearInterval(poll);
+      clearInterval(check);
+      statusSubs.delete(render);
       if (progressTimer) clearInterval(progressTimer);
       if (clockTimer) clearInterval(clockTimer);
       return;
     }
-    load();
-  }, 10000);
+  }, 1500);
 }

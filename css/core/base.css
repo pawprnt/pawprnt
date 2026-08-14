@@ -8,12 +8,15 @@
   --pink: #ff9dd2;
   --green: #9be0a8;
   --win: #16161e;
+  --win-a: rgba(22,22,30,.85);
   --win-border: #262634;
   --term-bg: #0b0b10;
+  --term-bg-a: rgba(11,11,16,.72);
   --red: #ff5f57;
   --yellow: #febc2e;
   --green-dot: #28c840;
   --surface2: #1c1c26;
+  --surface2-a: rgba(28,28,38,.62);
   --bar: rgba(14,14,18,.85);
   --btn: rgba(255,255,255,.04);
   --btn-hover: rgba(255,255,255,.1);
@@ -35,9 +38,12 @@
   --dim: #7b7890;
   --muted: #5a576e;
   --win: #ffffff;
+  --win-a: rgba(255,255,255,.85);
   --win-border: #d6d3e2;
   --term-bg: #f7f6fb;
+  --term-bg-a: rgba(247,246,251,.75);
   --surface2: #eceaf4;
+  --surface2-a: rgba(236,234,244,.62);
   --pink: #d63384;
   --green: #1f9d55;
   --yellow: #b58900;
@@ -79,6 +85,15 @@ body {
   background: var(--bg2);
 }
 
+[data-blur="off"] .win,
+[data-blur="off"] .win-titlebar,
+[data-blur="off"] .win-body {
+  backdrop-filter: none;
+}
+[data-blur="off"] .win { background: var(--win); }
+[data-blur="off"] .win-titlebar { background: var(--surface2); }
+[data-blur="off"] .win-body { background: var(--term-bg); }
+
 [data-corners="off"] .win,
 [data-corners="off"] .win-titlebar,
 [data-corners="off"] .win-body,
@@ -96,6 +111,13 @@ body {
 [data-corners="off"] .set-toggle,
 [data-corners="off"] .set-toggle::after,
 [data-corners="off"] .set-wp-thumb,
+[data-corners="off"] .set-nav-btn,
+[data-corners="off"] .set-card,
+[data-corners="off"] .set-seg,
+[data-corners="off"] .set-seg button,
+[data-corners="off"] .set-reset,
+[data-corners="off"] .set-wp-cell,
+[data-corners="off"] .set-wall,
 [data-corners="off"] .files-row,
 [data-corners="off"] .files-dir,
 [data-corners="off"] .boot-fill,

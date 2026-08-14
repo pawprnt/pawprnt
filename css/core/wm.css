@@ -1,7 +1,8 @@
 .win {
   position: absolute; min-width: 280px; min-height: 160px;
   pointer-events: auto;
-  background: var(--win);
+  background: var(--win-a);
+  backdrop-filter: blur(14px) saturate(1.2);
   border: 1px solid var(--win-border);
   border-radius: 10px;
   overflow: hidden;
@@ -38,7 +39,7 @@
 .win-titlebar {
   display: flex; align-items: center; gap: 7px;
   padding: 7px 10px;
-  background: var(--surface2);
+  background: var(--surface2-a);
   border-radius: 9px 9px 0 0;
   cursor: grab; flex-shrink: 0;
 }
@@ -52,14 +53,14 @@
 }
 
 .wbtn {
-  width: 12px; height: 12px; border-radius: 50%;
+  width: 14px; height: 14px; border-radius: 50%;
   border: none; padding: 0; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  color: transparent; font-size: 9px; font-weight: 700; line-height: 1;
+  color: rgba(0,0,0,.55); font-size: 11px; font-weight: 700; line-height: 1;
   flex-shrink: 0;
 }
 
-.wbtn:hover { color: rgba(0,0,0,.65); }
+.wbtn:hover { color: rgba(0,0,0,.85); }
 .wbtn.min { background: var(--yellow); }
 .wbtn.max { background: var(--green-dot); }
 .wbtn.close { background: var(--red); }
@@ -71,7 +72,7 @@
 
 .win-body {
   flex: 1; overflow: auto;
-  background: var(--term-bg);
+  background: var(--term-bg-a);
   border-radius: 0 0 9px 9px;
   user-select: text;
   padding: 12px;
