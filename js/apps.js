@@ -184,7 +184,7 @@ const APPS = {
     name: "wiki",
     icon: "wiki",
     tile: TILE_COLORS.proj,
-    open: () => {
+    open: (opts) => {
       const w = WM.makeWin({
         title: "wiki",
         width: 820,
@@ -232,6 +232,7 @@ const APPS = {
               const el = document.createElement("button");
               el.className = "wiki-page";
               el.textContent = p.title;
+              el.dataset.file = p.file;
               el.addEventListener("click", () => {
                 pages.querySelectorAll(".wiki-page").forEach((x) => x.classList.remove("active"));
                 el.classList.add("active");
@@ -274,7 +275,32 @@ const APPS = {
             content.innerHTML = '<div class="wiki-loading">couldn\'t load page :(</div>';
           });
       }
-      nav.querySelector(".wiki-proj").click();
+      const targetRepo = opts && opts.repo;
+      const targetPage = opts && opts.page;
+      if (targetRepo) {
+        const btns = nav.querySelectorAll(".wiki-proj");
+        for (const btn of btns) {
+          if (btn.textContent === targetRepo) { btn.click(); break; }
+        }
+      } else {
+        nav.querySelector(".wiki-proj").click();
+      }
+      if (targetPage) {
+        const targetLower = targetPage.toLowerCase().replace(/\.md$/, "");
+        const waitForPages = setInterval(() => {
+          const pageBtns = nav.querySelectorAll(".wiki-page");
+          for (const btn of pageBtns) {
+            const titleMatch = btn.textContent.toLowerCase() === targetLower;
+            const fileMatch = btn.dataset.file.replace(/\.md$/, "").toLowerCase() === targetLower;
+            if (titleMatch || fileMatch) {
+              btn.click();
+              clearInterval(waitForPages);
+              return;
+            }
+          }
+        }, 100);
+        setTimeout(() => clearInterval(waitForPages), 5000);
+      }
       return w;
     },
   },
