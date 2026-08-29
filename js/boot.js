@@ -19,7 +19,11 @@ function runBoot(onDone) {
 
   const step = () => {
     if (line < BOOT_LINES.length) {
-      log.textContent = BOOT_LINES[line++];
+      const el = document.createElement("div");
+      el.className = "boot-line";
+      el.textContent = BOOT_LINES[line++];
+      log.appendChild(el);
+      while (log.children.length > 6) log.removeChild(log.firstChild);
       setTimeout(step, 350);
     } else {
       boot.querySelector(".boot-fill").style.animationPlayState = "paused";

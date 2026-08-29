@@ -18,6 +18,13 @@
 .proj .row:hover .name { color: var(--accent); }
 .proj .name { font-weight: 700; }
 .proj .desc { color: var(--dim); font-size: .78rem; text-align: right; }
+
+.proj .gh-loading, .proj .gh-err { color: var(--dim); padding: 8px 0; }
+.proj .gh-row { padding: 10px 0; border-bottom: 1px solid var(--win-border); }
+.proj .gh-row a { color: var(--fg); text-decoration: none; font-weight: 700; }
+.proj .gh-row a:hover { color: var(--accent); }
+.proj .gh-meta { color: var(--dim); font-size: .74rem; margin-top: 4px; line-height: 1.5; }
+.proj .gh-meta b { color: var(--pink); font-weight: 400; }
 .st-wrap {
   padding: 14px 16px; height: 100%; overflow-y: auto;
   display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; align-items: flex-start;

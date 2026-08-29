@@ -7,7 +7,6 @@ const ALLOWED_ORIGINS = new Set([
   "https://pawprnt.github.io",
   "http://127.0.0.1:8080",
   "http://localhost:8080",
-  "null",
 ]);
 const HEADERS = {
   "Content-Type": "application/json",
@@ -84,7 +83,7 @@ async function handleArt(url, env, cors) {
 }
 
 async function handleRecent(url, env, cors) {
-  const user = url.searchParams.get("user") || env.LASTFM_USER || "foxinwinter";
+  const user = env.LASTFM_USER || "foxinwinter";
   const j = await lastfm("user.getrecenttracks", { user: user, limit: "1" }, env);
   if (j.error) {
     return json({ error: true, message: j.message }, 502, cors);
@@ -112,13 +111,13 @@ async function handleRecent(url, env, cors) {
 export default {
   async fetch(request, env) {
     const origin = request.headers.get("Origin");
-    if (origin && !ALLOWED_ORIGINS.has(origin)) {
-      return json({ error: true, message: "forbidden origin" }, 403, {
+    if (!origin || !ALLOWED_ORIGINS.has(origin)) {
+      return json({ error: true, message: "forbidden" }, 403, {
         ...HEADERS,
-        "Access-Control-Allow-Origin": origin,
+        "Access-Control-Allow-Origin": origin || "",
       });
     }
-    const cors = { ...HEADERS, "Access-Control-Allow-Origin": origin || "*" };
+    const cors = { ...HEADERS, "Access-Control-Allow-Origin": origin };
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: cors });
     }

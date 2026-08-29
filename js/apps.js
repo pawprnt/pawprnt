@@ -3,6 +3,7 @@ const ICONS = {
   files: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>',
   about: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
   proj: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
+  wiki: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h11a4 4 0 0 1 4 4v12a4 4 0 0 0-4-4H4z"/><path d="M4 4v16"/></svg>',
   set: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>',
 };
 
@@ -13,6 +14,73 @@ const TILE_COLORS = {
   proj: "#7fd1e0",
   set: "#a9b0c8",
 };
+
+const REPOS = [
+  { name: "forager", url: "https://github.com/pawprnt/forager", api: "pawprnt/forager", branch: "main" },
+  { name: "OneBoot", url: "https://github.com/pawprnt/OneBoot", api: "pawprnt/OneBoot", branch: "main" },
+  { name: "onewm", url: "https://github.com/pawprnt/onewm", api: "pawprnt/onewm", branch: "main" },
+];
+
+function fmtGhDate(iso) {
+  const d = new Date(iso);
+  if (isNaN(d)) return "unknown";
+  const p = (n) => String(n).padStart(2, "0");
+  return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + " " + p(d.getHours()) + ":" + p(d.getMinutes());
+}
+
+async function ghRepoStat(repo) {
+  const base = "https://api.github.com/repos/" + repo.api;
+  const [info, commit, rel] = await Promise.allSettled([
+    fetch(base).then((r) => (r.ok ? r.json() : Promise.reject())),
+    fetch(base + "/commits?per_page=1").then((r) => (r.ok ? r.json() : Promise.reject())),
+    fetch(base + "/releases/latest").then((r) => (r.ok ? r.json() : Promise.reject())),
+  ]);
+  const stars = info.status === "fulfilled" ? info.value.stargazers_count : "?";
+  const last = commit.status === "fulfilled" && commit.value[0] ? fmtGhDate(commit.value[0].commit.author.date) : "unknown";
+  const release = rel.status === "fulfilled" ? fmtGhDate(rel.value.published_at) : "no release";
+  return { stars, last, release };
+}
+
+function rawWiki(repo, path) {
+  return "https://raw.githubusercontent.com/" + repo.api + "/" + repo.branch + "/wiki/" + path;
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function mdInline(s) {
+  return s
+    .replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+}
+
+function mdToHtml(md) {
+  const lines = escapeHtml(md).split("\n");
+  let html = "";
+  let inCode = false;
+  let buf = [];
+  const flush = () => {
+    html += "<pre><code>" + buf.join("\n") + "</code></pre>";
+    buf = [];
+  };
+  for (const line of lines) {
+    if (line.startsWith("```")) {
+      if (inCode) { flush(); inCode = false; }
+      else { inCode = true; }
+      continue;
+    }
+    if (inCode) { buf.push(line); continue; }
+    if (/^### /.test(line)) html += "<h3>" + mdInline(line.slice(4)) + "</h3>";
+    else if (/^## /.test(line)) html += "<h2>" + mdInline(line.slice(3)) + "</h2>";
+    else if (/^# /.test(line)) html += "<h1>" + mdInline(line.slice(2)) + "</h1>";
+    else if (/^[-*] /.test(line)) html += "<li>" + mdInline(line.slice(2)) + "</li>";
+    else if (line.trim() !== "") html += "<p>" + mdInline(line) + "</p>";
+  }
+  if (inCode) flush();
+  return html;
+}
 
 function neofetchAscii() {
   return "   ,     ,\n   )\\_._/(\n  =>  Y  <=\n  /       \\\n  \\       /\n   \\     /\n    )|(\n     \" \"";
@@ -78,33 +146,135 @@ const APPS = {
       return w;
     },
   },
-  proj: {
+
+  repos: {
     name: "projects",
     icon: "proj",
     tile: TILE_COLORS.proj,
     open: () => {
       const w = WM.makeWin({
         title: "projects",
-        width: 520,
-        height: 360,
+        width: 560,
+        height: 440,
+        noPad: true,
       });
-      const rows = [
-        ["forager", "a game launcher", "https://github.com/pawprnt/forager"],
-        ["tizentube", "youtube for tizen tvs", "https://github.com/pawprnt/tizentube"],
-        ["tizenMngr", "security research notes", "https://github.com/pawprnt/tizenMngr"],
-      ]
-        .map(
-          ([name, desc, url]) =>
-            '<a class="row" href="' +
-            url +
-            '" target="_blank" rel="noopener"><span class="name">' +
-            name +
-            '</span><span class="desc">' +
-            desc +
-            "</span></a>"
-        )
-        .join("");
-      w.bodyEl.innerHTML = '<div class="proj">' + rows + "</div>";
+      const root = document.createElement("div");
+      root.className = "proj";
+      w.bodyEl.appendChild(root);
+      REPOS.forEach((repo) => {
+        const row = document.createElement("div");
+        row.className = "gh-row";
+        row.innerHTML =
+          '<a href="' + repo.url + '" target="_blank" rel="noopener">' + repo.name + "</a>" +
+          '<div class="gh-meta">loading...</div>';
+        root.appendChild(row);
+        const meta = row.querySelector(".gh-meta");
+        ghRepoStat(repo)
+          .then((s) => {
+            meta.innerHTML = "stars: <b>" + s.stars + "</b> · last commit: " + s.last + " · release: " + s.release;
+          })
+          .catch(() => {
+            meta.textContent = "couldn't reach github :(";
+          });
+      });
+      return w;
+    },
+  },
+  wiki: {
+    name: "wiki",
+    icon: "wiki",
+    tile: TILE_COLORS.proj,
+    open: () => {
+      const w = WM.makeWin({
+        title: "wiki",
+        width: 820,
+        height: 560,
+        noPad: true,
+      });
+      const root = document.createElement("div");
+      root.className = "wiki";
+      root.innerHTML =
+        '<aside class="wiki-side"><div class="wiki-brand">wiki</div><nav class="wiki-nav"></nav></aside>' +
+        '<section class="wiki-main"><div class="wiki-crumb"></div><div class="wiki-content"></div></section>';
+      w.bodyEl.appendChild(root);
+      const nav = root.querySelector(".wiki-nav");
+      const crumb = root.querySelector(".wiki-crumb");
+      const content = root.querySelector(".wiki-content");
+      let active = null;
+      REPOS.forEach((repo) => {
+        const group = document.createElement("div");
+        group.className = "wiki-group";
+        const head = document.createElement("button");
+        head.className = "wiki-proj";
+        head.textContent = repo.name;
+        const pages = document.createElement("div");
+        pages.className = "wiki-pages";
+        head.addEventListener("click", () => {
+          document.querySelectorAll(".wiki-group").forEach((g) => g.classList.remove("open"));
+          group.classList.add("open");
+          active = repo;
+          loadPages(repo, pages);
+        });
+        group.appendChild(head);
+        group.appendChild(pages);
+        nav.appendChild(group);
+      });
+      function loadPages(repo, pages) {
+        if (pages.dataset.loaded) { openFirst(pages); return; }
+        pages.innerHTML = '<div class="wiki-loading">loading...</div>';
+        fetch(rawWiki(repo, "index.json"))
+          .then((r) => (r.ok ? r.json() : Promise.reject()))
+          .then((list) => {
+            pages.dataset.loaded = "1";
+            pages.innerHTML = "";
+            pages.appendChild(newBtn(repo));
+            list.forEach((p) => {
+              const el = document.createElement("button");
+              el.className = "wiki-page";
+              el.textContent = p.title;
+              el.addEventListener("click", () => {
+                pages.querySelectorAll(".wiki-page").forEach((x) => x.classList.remove("active"));
+                el.classList.add("active");
+                loadPage(repo, p);
+              });
+              pages.appendChild(el);
+            });
+            openFirst(pages);
+          })
+          .catch(() => {
+            pages.dataset.loaded = "1";
+            pages.innerHTML = "";
+            pages.appendChild(newBtn(repo));
+            const msg = document.createElement("div");
+            msg.className = "wiki-loading";
+            msg.textContent = "no pages yet";
+            pages.appendChild(msg);
+          });
+      }
+      function newBtn(repo) {
+        const b = document.createElement("button");
+        b.className = "wiki-new";
+        b.textContent = "+ new page";
+        b.addEventListener("click", () => window.open("https://github.com/" + repo.api + "/new/" + repo.branch + "/wiki", "_blank", "noopener"));
+        return b;
+      }
+      function openFirst(pages) {
+        const first = pages.querySelector(".wiki-page");
+        if (first) first.click();
+      }
+      function loadPage(repo, p) {
+        crumb.textContent = repo.name + " / " + p.title;
+        content.innerHTML = '<div class="wiki-loading">loading...</div>';
+        fetch(rawWiki(repo, p.file))
+          .then((r) => (r.ok ? r.text() : Promise.reject()))
+          .then((md) => {
+            content.innerHTML = '<article class="wiki-md">' + mdToHtml(md) + "</article>";
+          })
+          .catch(() => {
+            content.innerHTML = '<div class="wiki-loading">couldn\'t load page :(</div>';
+          });
+      }
+      nav.querySelector(".wiki-proj").click();
       return w;
     },
   },
