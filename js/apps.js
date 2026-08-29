@@ -61,14 +61,25 @@ function mdToHtml(md) {
   let html = "";
   let inCode = false;
   let buf = [];
-  let inTable = false;
-  let tableHtml = "";
+  let tableRows = [];
   const flush = () => {
     html += "<pre><code>" + buf.join("\n") + "</code></pre>";
     buf = [];
   };
   const flushTable = () => {
-    if (inTable) { html += tableHtml + "</tbody></table>"; inTable = false; tableHtml = ""; }
+    if (tableRows.length === 0) return;
+    const header = tableRows[0];
+    const body = tableRows.slice(1);
+    html += "<table><thead><tr>";
+    header.forEach((c) => { html += "<th>" + mdInline(c) + "</th>"; });
+    html += "</tr></thead><tbody>";
+    body.forEach((row) => {
+      html += "<tr>";
+      row.forEach((c) => { html += "<td>" + mdInline(c) + "</td>"; });
+      html += "</tr>";
+    });
+    html += "</tbody></table>";
+    tableRows = [];
   };
   for (const line of lines) {
     if (line.startsWith("```")) {
@@ -80,17 +91,9 @@ function mdToHtml(md) {
     const trimmed = line.trim();
     if (trimmed.startsWith("|") && trimmed.endsWith("|")) {
       const isSep = /^\|[\s\-:|]+\|$/.test(trimmed);
-      if (!inTable && !isSep) {
-        inTable = true;
-        tableHtml = "<table><thead><tr>";
-        trimmed.split("|").slice(1, -1).forEach((c) => { tableHtml += "<th>" + mdInline(c.trim()) + "</th>"; });
-        tableHtml += "</tr></thead><tbody>";
-      } else if (inTable && isSep) {
-        // skip separator row
-      } else if (inTable) {
-        tableHtml += "<tr>";
-        trimmed.split("|").slice(1, -1).forEach((c) => { tableHtml += "<td>" + mdInline(c.trim()) + "</td>"; });
-        tableHtml += "</tr>";
+      if (!isSep) {
+        const cells = trimmed.split("|").slice(1, -1).map((c) => c.trim());
+        tableRows.push(cells);
       }
       continue;
     }
@@ -290,6 +293,7 @@ const APPS = {
       function loadPage(repo, p) {
         crumb.textContent = repo.name + " / " + p.title;
         content.innerHTML = '<div class="wiki-loading">loading...</div>';
+        setWikiHash(repo.name, p.title);
         fetch(rawWiki(repo, p.file))
           .then((r) => (r.ok ? r.text() : Promise.reject()))
           .then((md) => {

@@ -4,3 +4,6 @@ node_modules/
 /worker/.wrangler/
 .dev.vars
 __pycache__/
+
+# -- editor junk -- #
+*.kate-swp
