@@ -1,8 +1,8 @@
 const OPEN = {};
 
-function openApp(key) {
+function openApp(key, opts) {
   const app = APPS[key];
-  const w = app.open();
+  const w = app.open(opts);
   if (w && w.el) {
     (OPEN[key] = OPEN[key] || []).push(w.el);
     syncTaskbar();

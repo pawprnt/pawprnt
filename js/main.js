@@ -22,8 +22,8 @@ function handleDeepLink() {
   const repo = parts[0] || null;
   const page = parts.slice(1).join("/") || null;
   setTimeout(() => {
-    APPS.wiki.open({ repo, page });
-  }, 200);
+    openApp("wiki", { repo, page });
+  }, 300);
 }
 
 function setWikiHash(repo, page) {

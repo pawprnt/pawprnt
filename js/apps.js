@@ -97,6 +97,7 @@ function mdToHtml(md) {
       }
       continue;
     }
+    if (tableRows.length > 0 && trimmed === "") continue;
     flushTable();
     if (/^### /.test(line)) html += "<h3>" + mdInline(line.slice(4)) + "</h3>";
     else if (/^## /.test(line)) html += "<h2>" + mdInline(line.slice(3)) + "</h2>";
