@@ -23,6 +23,6 @@ function handleDeepLink() {
     const page = parts.slice(1).join("/") || null;
     setTimeout(() => {
       APPS.wiki.open({ repo, page });
-    }, 100);
+    }, 500);
   }
 }
