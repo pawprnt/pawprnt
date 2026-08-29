@@ -61,9 +61,14 @@ function mdToHtml(md) {
   let html = "";
   let inCode = false;
   let buf = [];
+  let inTable = false;
+  let tableHtml = "";
   const flush = () => {
     html += "<pre><code>" + buf.join("\n") + "</code></pre>";
     buf = [];
+  };
+  const flushTable = () => {
+    if (inTable) { html += tableHtml + "</tbody></table>"; inTable = false; tableHtml = ""; }
   };
   for (const line of lines) {
     if (line.startsWith("```")) {
@@ -72,13 +77,32 @@ function mdToHtml(md) {
       continue;
     }
     if (inCode) { buf.push(line); continue; }
+    const trimmed = line.trim();
+    if (trimmed.startsWith("|") && trimmed.endsWith("|")) {
+      const isSep = /^\|[\s\-:|]+\|$/.test(trimmed);
+      if (!inTable && !isSep) {
+        inTable = true;
+        tableHtml = "<table><thead><tr>";
+        trimmed.split("|").slice(1, -1).forEach((c) => { tableHtml += "<th>" + mdInline(c.trim()) + "</th>"; });
+        tableHtml += "</tr></thead><tbody>";
+      } else if (inTable && isSep) {
+        // skip separator row
+      } else if (inTable) {
+        tableHtml += "<tr>";
+        trimmed.split("|").slice(1, -1).forEach((c) => { tableHtml += "<td>" + mdInline(c.trim()) + "</td>"; });
+        tableHtml += "</tr>";
+      }
+      continue;
+    }
+    flushTable();
     if (/^### /.test(line)) html += "<h3>" + mdInline(line.slice(4)) + "</h3>";
     else if (/^## /.test(line)) html += "<h2>" + mdInline(line.slice(3)) + "</h2>";
     else if (/^# /.test(line)) html += "<h1>" + mdInline(line.slice(2)) + "</h1>";
     else if (/^[-*] /.test(line)) html += "<li>" + mdInline(line.slice(2)) + "</li>";
-    else if (line.trim() !== "") html += "<p>" + mdInline(line) + "</p>";
+    else if (trimmed !== "") html += "<p>" + mdInline(line) + "</p>";
   }
   if (inCode) flush();
+  flushTable();
   return html;
 }
 
