@@ -109,6 +109,34 @@ async function handleRecent(url, env, cors) {
   return json(out, 200, cors);
 }
 
+async function handleLyrics(url, env, cors) {
+  const artist = (url.searchParams.get("artist") || "").trim();
+  const song = (url.searchParams.get("song") || "").trim();
+  const duration = parseInt(url.searchParams.get("duration") || "0", 10);
+  if (!artist || !song) {
+    return json({ error: true, message: "artist and song required" }, 400, cors);
+  }
+  const params = new URLSearchParams({ artist_name: artist, track_name: song });
+  if (duration > 0) params.set("duration", duration);
+  try {
+    const res = await fetch("https://lrclib.net/api/get?" + params.toString(), {
+      headers: { "User-Agent": "pawprnt/1.0 (https://pawprnt.pages.dev)" },
+    });
+    if (!res.ok) return json({ error: true, message: "not found" }, 404, cors);
+    const data = await res.json();
+    if (!data.syncedLyrics) return json({ error: true, message: "no synced lyrics" }, 404, cors);
+    const lines = data.syncedLyrics.split("\n").map((line) => {
+      const m = line.match(/^\[(\d{2}):(\d{2})\.(\d{2,3})\]\s*(.*)/);
+      if (!m) return null;
+      const time = parseInt(m[1], 10) * 60 + parseInt(m[2], 10) + parseInt(m[3], 10) / (m[3].length === 3 ? 1000 : 100);
+      return { time, text: m[4] };
+    }).filter(Boolean);
+    return json({ lines, source: "lrclib" }, 200, cors);
+  } catch (e) {
+    return json({ error: true, message: "fetch failed" }, 502, cors);
+  }
+}
+
 export default {
   async fetch(request, env) {
     const origin = request.headers.get("Origin");
@@ -125,6 +153,9 @@ export default {
     const url = new URL(request.url);
     if (url.searchParams.get("art")) {
       return handleArt(url, env, cors);
+    }
+    if (url.searchParams.get("lyrics")) {
+      return handleLyrics(url, env, cors);
     }
     return handleRecent(url, env, cors);
   },
