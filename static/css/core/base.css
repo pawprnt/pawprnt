@@ -31,7 +31,7 @@
   --shadow2: rgba(0,0,0,.55);
 }
 
-[data-theme="light"] {
+html[data-theme="light"] {
   --bg: #f3f1f8;
   --bg2: #eae8f2;
   --fg: #201d2b;
@@ -73,6 +73,12 @@ body {
 
 .hidden { display: none !important; }
 
+/* hide scrollbars everywhere */
+*, *::before, *::after {
+  scrollbar-width: none;
+}
+::-webkit-scrollbar { display: none; }
+
 [data-motion="off"] *,
 [data-motion="off"] *::before,
 [data-motion="off"] *::after {
@@ -94,34 +100,7 @@ body {
 [data-blur="off"] .win-titlebar { background: var(--surface2); }
 [data-blur="off"] .win-body { background: var(--term-bg); }
 
-[data-corners="off"] .win,
-[data-corners="off"] .win-titlebar,
-[data-corners="off"] .win-body,
-[data-corners="off"] .win-dot,
-[data-corners="off"] .task-btn,
-[data-corners="off"] .tile,
-[data-corners="off"] .st-card,
-[data-corners="off"] .st-art,
-[data-corners="off"] .st-pbar,
-[data-corners="off"] .st-fl a,
-[data-corners="off"] .swatch,
-[data-corners="off"] .custom-color,
-[data-corners="off"] .theme-btn,
-[data-corners="off"] .set-row,
-[data-corners="off"] .set-toggle,
-[data-corners="off"] .set-toggle::after,
-[data-corners="off"] .set-wp-thumb,
-[data-corners="off"] .set-nav-btn,
-[data-corners="off"] .set-card,
-[data-corners="off"] .set-seg,
-[data-corners="off"] .set-seg button,
-[data-corners="off"] .set-reset,
-[data-corners="off"] .set-wp-cell,
-[data-corners="off"] .set-wall,
-[data-corners="off"] .files-row,
-[data-corners="off"] .files-dir,
-[data-corners="off"] .boot-fill,
-[data-corners="off"] .st-ptime {
+[data-corners="off"] * {
   border-radius: 0 !important;
 }
 
@@ -130,6 +109,14 @@ body {
 #desktop {
   position: fixed; inset: 0;
   background: var(--bg);
+}
+
+#wallpaper {
+  position: absolute; inset: 0;
+}
+
+html[data-theme="light"] #wallpaper {
+  opacity: 0.35;
 }
 
 #desktop::before {

@@ -1,47 +1,68 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>pawprntos</title>
-<link rel="icon" type="image/x-icon" href="favicon.ico">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-<link rel="stylesheet" href="css/core/base.css">
-<link rel="stylesheet" href="css/core/boot.css">
-<link rel="stylesheet" href="css/core/wm.css">
-<link rel="stylesheet" href="css/core/taskbar.css">
-<link rel="stylesheet" href="css/apps/terminal.css">
-<link rel="stylesheet" href="css/apps/files.css">
-<link rel="stylesheet" href="css/apps/viewer.css">
-<link rel="stylesheet" href="css/apps/about.css">
-<link rel="stylesheet" href="css/apps/wiki.css">
-<link rel="stylesheet" href="css/apps/settings.css">
-<script defer src="https://cloud.umami.is/script.js" data-website-id="f2cab1a5-b5de-4de7-b8c1-2a862385d057" data-do-not-track="true"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>pawprntos</title>
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="pawprntos">
+  <meta property="og:description" content="a browser-based os simulation with a terminal, file browser, wiki viewer, and more.">
+  <meta property="og:url" content="https://pawprnt.pages.dev">
+  <meta property="og:image" content="static/favicons/favicon-32.png">
+  <meta name="theme-color" content="#0e0e12">
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/x-icon" href="static/favicons/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="static/favicons/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="static/favicons/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="static/favicons/apple-touch-icon.png">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="static/css/core/base.css">
+  <link rel="stylesheet" href="static/css/core/boot.css">
+  <link rel="stylesheet" href="static/css/core/wm.css">
+  <link rel="stylesheet" href="static/css/core/taskbar.css">
+  <link rel="stylesheet" href="static/css/apps/terminal.css">
+  <link rel="stylesheet" href="static/css/apps/files.css">
+  <link rel="stylesheet" href="static/css/apps/viewer.css">
+  <link rel="stylesheet" href="static/css/apps/about.css">
+  <link rel="stylesheet" href="static/css/apps/wiki.css">
+  <link rel="stylesheet" href="static/css/apps/settings.css">
+
+  <!-- Cloudflare Web Analytics -->
+  <script defer data-cf-beacon='{"token":"43d4379018a3422ca0545db123e62faf"}' src="https://static.cloudflareinsights.com/beacon.min.js"></script>
 </head>
 <body>
+  <div id="boot">
+    <div class="boot-logo">pawprntos<span class="cursor">&#9612;</span></div>
+    <div class="boot-bar"><div class="boot-fill"></div></div>
+    <div class="boot-log"></div>
+  </div>
 
-<div id="boot">
-  <div class="boot-logo">pawprntos<span class="cursor">▊</span></div>
-  <div class="boot-bar"><div class="boot-fill"></div></div>
-  <div class="boot-log"></div>
-</div>
+  <main id="desktop" hidden>
+    <div id="wallpaper"></div>
+    <div id="windows"></div>
+    <div id="taskbar"></div>
+  </main>
 
-<main id="desktop" hidden>
-  <div id="windows"></div>
-  <div id="taskbar"></div>
-</main>
-
-<script src="js/fs.js"></script>
-<script src="js/boot.js"></script>
-<script src="js/wm.js"></script>
-<script src="js/terminal.js"></script>
-<script src="js/apps.js"></script>
-<script src="js/taskbar.js"></script>
-<script src="js/wallpapers.js"></script>
-<script src="js/settings.js"></script>
-<script src="js/status.js"></script>
-<script src="js/main.js"></script>
+  <!-- Scripts (defer = parallel download, execute in order after DOM parse) -->
+  <script defer src="static/js/core/filesystem.js"></script>
+  <script defer src="static/js/core/helpers.js"></script>
+  <script defer src="static/js/core/boot.js"></script>
+  <script defer src="static/js/core/wm.js"></script>
+  <script defer src="static/js/apps/terminal/index.js"></script>
+  <script defer src="static/js/apps/repos.js"></script>
+  <script defer src="static/js/apps/files/admin.js"></script>
+  <script defer src="static/js/apps/files/index.js"></script>
+  <script defer src="static/js/core/wallpapers.js"></script>
+  <script defer src="static/js/core/taskbar.js"></script>
+  <script defer src="static/js/core/settings.js"></script>
+  <script defer src="static/js/apps/about/lyrics.js"></script>
+  <script defer src="static/js/apps/about/index.js"></script>
+  <script defer src="static/js/apps/settings/index.js"></script>
+  <script defer src="static/js/apps/registry.js"></script>
+  <script defer src="static/js/core/main.js"></script>
 </body>
 </html>

@@ -1,3 +1,7 @@
+// wm.js — window manager for pawprntos
+// handles window creation, focusing, minimizing, maximizing, and closing
+// animations and window stacking (z-index management)
+
 const WM = (() => {
   const WIN_CLOSE_MS = 160;
   const WIN_GEO_MS = 180;
@@ -108,6 +112,8 @@ const WM = (() => {
     );
   }
 
+  // Creates a new window with title bar, minimize/maximize/close buttons
+  // Returns { el, bodyEl } where bodyEl is the content area
   function makeWin({ title, width, height, body, noPad }) {
     const id = ++count;
     const el = document.createElement("div");

@@ -17,6 +17,6 @@
 
 .term-line { display: flex; gap: .4em; }
 .term-prompt { color: var(--accent); white-space: nowrap; }
-.term-input { flex: 1; outline: none; caret-color: var(--pink); }
+.term-input { flex: 1; outline: none; caret-color: var(--pink); cursor: text; }
 
 .term .ascii { color: var(--accent); font-size: .72rem; line-height: 1.25; user-select: none; }

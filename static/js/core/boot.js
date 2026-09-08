@@ -1,3 +1,7 @@
+// boot.js — boot sequence animation for pawprntos
+// fake boot sequence with progress bar and log messages
+
+// boot sequence messages
 const BOOT_LINES = [
   "pawprntos boot",
   "mounting /nyaa ........ ok",
@@ -6,6 +10,8 @@ const BOOT_LINES = [
   "pawprints ............. ok",
 ];
 
+// runs the boot sequence animation
+// calls onDone when complete (or when user clicks)
 function runBoot(onDone) {
   const boot = document.getElementById("boot");
   const log = boot.querySelector(".boot-log");

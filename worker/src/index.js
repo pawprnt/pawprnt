@@ -1,152 +1,17 @@
-const LF_BASE = "https://ws.audioscrobbler.com/2.0/";
-const YT_KEY = "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8";
-const YT_URL = "https://music.youtube.com/youtubei/v1/search";
-const YT_CLIENT = { clientName: "WEB_REMIX", clientVersion: "1.20250220.01.00", hl: "en" };
-const YT_SONGS_PARAMS = "EgWKAQIIAWoMEA4QChADEAQQCRAF";
-const ALLOWED_ORIGINS = new Set([
-  "https://pawprnt.pages.dev",
-  "https://pawprnt.github.io",
-  "http://127.0.0.1:8080",
-  "http://localhost:8080",
-]);
-const HEADERS = {
-  "Content-Type": "application/json",
-  "Access-Control-Allow-Methods": "GET,OPTIONS",
-};
-
-function json(data, status, cors) {
-  return new Response(JSON.stringify(data), { status: status, headers: cors });
-}
-
-async function lastfm(method, params, env) {
-  const p = new URLSearchParams({ method: method, api_key: env.LASTFM_API_KEY, format: "json", ...params });
-  const res = await fetch(LF_BASE + "?" + p.toString());
-  return res.json();
-}
-
-function normThumb(url) {
-  if (!url) return null;
-  const m = url.match(/^https:\/\/i\.ytimg\.com\/vi\/([^/]+)\/hqdefault\.jpg/);
-  if (m) return "https://i.ytimg.com/vi/" + m[1] + "/hqdefault.jpg";
-  if (/=w\d+-h\d+/.test(url)) return url.replace(/=w\d+-h\d+/, "=w544-h544");
-  return url;
-}
-
-async function ytArt(song, artist) {
-  const body = JSON.stringify({
-    context: { client: YT_CLIENT },
-    query: artist + " " + song,
-    params: YT_SONGS_PARAMS,
-  });
-  const res = await fetch(YT_URL + "?key=" + YT_KEY, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: body,
-  });
-  const j = await res.json();
-  try {
-    const slr = j.contents.tabbedSearchResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer;
-    for (const sec of slr.contents) {
-      const msr = sec.musicShelfRenderer;
-      if (!msr) continue;
-      for (const it of msr.contents || []) {
-        const r = it.musicResponsiveListItemRenderer;
-        const t = r && r.thumbnail && r.thumbnail.musicThumbnailRenderer && r.thumbnail.musicThumbnailRenderer.thumbnail;
-        if (t && t.thumbnails && t.thumbnails.length) return normThumb(t.thumbnails[t.thumbnails.length - 1].url);
-      }
-    }
-  } catch (e) {}
-  return null;
-}
-
-async function handleArt(url, env, cors) {
-  const song = (url.searchParams.get("song") || "").trim();
-  const artist = (url.searchParams.get("artist") || "").trim();
-  if (!song || !artist) {
-    return json({ error: true, message: "song and artist required" }, 400, cors);
-  }
-  try {
-    const j = await lastfm("track.getInfo", { artist: artist, track: song, autocorrect: "1" }, env);
-    const album = j.track && j.track.album;
-    if (album) {
-      const imgs = album.image || [];
-      const img = imgs.slice().reverse().find((i) => i["#text"]);
-      if (img && img["#text"]) {
-        return json({ image: img["#text"], source: "lastfm" }, 200, cors);
-      }
-    }
-  } catch (e) {}
-  const image = await ytArt(song, artist);
-  if (image) {
-    return json({ image: image, source: "ytmusic" }, 200, cors);
-  }
-  return json({ error: true, message: "no art found" }, 404, cors);
-}
-
-async function handleRecent(url, env, cors) {
-  const user = env.LASTFM_USER || "foxinwinter";
-  const j = await lastfm("user.getrecenttracks", { user: user, limit: "1" }, env);
-  if (j.error) {
-    return json({ error: true, message: j.message }, 502, cors);
-  }
-  const track = j.recenttracks && j.recenttracks.track && j.recenttracks.track[0];
-  if (!track) {
-    return json({ error: true, message: "no tracks" }, 502, cors);
-  }
-  const image = (track.image || []).slice().reverse().find((i) => i["#text"]) || {};
-  const out = {
-    nowplaying: !!(track["@attr"] && track["@attr"].nowplaying === "true"),
-    song: track.name || "",
-    artist: (track.artist && track.artist["#text"]) || "",
-    album: (track.album && track.album["#text"]) || "",
-    url: track.url || "",
-    image: image["#text"] || "",
-  };
-  if (!out.image) {
-    const yt = await ytArt(out.song, out.artist);
-    if (yt) out.image = yt;
-  }
-  return json(out, 200, cors);
-}
-
-async function handleLyrics(url, env, cors) {
-  const artist = (url.searchParams.get("artist") || "").trim();
-  const song = (url.searchParams.get("song") || "").trim();
-  const duration = parseInt(url.searchParams.get("duration") || "0", 10);
-  if (!artist || !song) {
-    return json({ error: true, message: "artist and song required" }, 400, cors);
-  }
-  const params = new URLSearchParams({ artist_name: artist, track_name: song });
-  if (duration > 0) params.set("duration", duration);
-  try {
-    const res = await fetch("https://lrclib.net/api/get?" + params.toString(), {
-      headers: { "User-Agent": "pawprnt/1.0 (https://pawprnt.pages.dev)" },
-    });
-    if (!res.ok) return json({ error: true, message: "not found" }, 404, cors);
-    const data = await res.json();
-    if (!data.syncedLyrics) return json({ error: true, message: "no synced lyrics" }, 404, cors);
-    const lines = data.syncedLyrics.split("\n").map((line) => {
-      const m = line.match(/^\[(\d{2}):(\d{2})\.(\d{2,3})\]\s*(.*)/);
-      if (!m) return null;
-      const time = parseInt(m[1], 10) * 60 + parseInt(m[2], 10) + parseInt(m[3], 10) / (m[3].length === 3 ? 1000 : 100);
-      return { time, text: m[4] };
-    }).filter(Boolean);
-    return json({ lines, source: "lrclib" }, 200, cors);
-  } catch (e) {
-    return json({ error: true, message: "fetch failed" }, 502, cors);
-  }
-}
+import { json, getCors } from "./utils/cors.js";
+import { handleArt } from "./handlers/art.js";
+import { handleLyrics } from "./handlers/lyrics.js";
+import { handleGames } from "./handlers/games.js";
+import { handleNotify } from "./handlers/notify.js";
+import { handleRecent } from "./handlers/recent.js";
+import { handleAdmin } from "./handlers/admin.js";
 
 export default {
   async fetch(request, env) {
-    const origin = request.headers.get("Origin");
-    if (!origin || !ALLOWED_ORIGINS.has(origin)) {
-      return json({ error: true, message: "forbidden" }, 403, {
-        ...HEADERS,
-        "Access-Control-Allow-Origin": origin || "",
-      });
+    const { cors, allowed } = getCors(request);
+    if (!allowed) {
+      return json({ error: true, message: "forbidden" }, 403, cors);
     }
-    const cors = { ...HEADERS, "Access-Control-Allow-Origin": origin };
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: cors });
     }
@@ -156,6 +21,15 @@ export default {
     }
     if (url.searchParams.get("lyrics")) {
       return handleLyrics(url, env, cors);
+    }
+    if (url.searchParams.get("games")) {
+      return handleGames(request, env, cors);
+    }
+    if (url.searchParams.get("notify")) {
+      return handleNotify(request, env, cors);
+    }
+    if (url.searchParams.get("admin")) {
+      return handleAdmin(request, env, cors);
     }
     return handleRecent(url, env, cors);
   },

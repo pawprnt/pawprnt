@@ -1,8 +1,13 @@
+// wallpapers.js — wallpaper management for pawprntos
+// available wallpapers (gradients, images, animations)
+// and functions to apply and save wallpaper choices
+
+// local storage key for wallpaper
 const WP_KEY = "pawprntos.wallpaper";
 
 const WALLPAPERS = [
   { id: "forest", name: "forest",
-    css: 'url("assets/wallpapers/forest.jpg") center / cover no-repeat' },
+    css: 'url("static/wallpapers/forest.jpg") center / cover no-repeat' },
 
   { id: "midnight", name: "midnight",
     css: "linear-gradient(160deg,#0b0b12,#1c1730 55%,#33264f)" },
@@ -48,6 +53,7 @@ const WALLPAPERS = [
     anim: "wp-slide 12s linear infinite" },
 ];
 
+// injects css keyframes for animated wallpapers
 function injectWpKeyframes() {
   if (document.getElementById("wp-kf")) return;
   const st = document.createElement("style");
@@ -60,15 +66,17 @@ function injectWpKeyframes() {
   document.head.appendChild(st);
 }
 
+// applies a wallpaper by ID and saves the choice
 function applyWallpaper(id) {
   const wp = WALLPAPERS.find((w) => w.id === id) || WALLPAPERS[0];
-  const d = document.getElementById("desktop");
+  const d = document.getElementById("wallpaper");
   d.style.background = wp.css;
   d.style.animation = wp.anim || "none";
   try { localStorage.setItem(WP_KEY, wp.id); } catch (e) {}
   return wp;
 }
 
+// retrieves the saved wallpaper ID from localStorage
 function savedWallpaper() {
   try { return localStorage.getItem(WP_KEY); } catch (e) { return null; }
 }

@@ -1,5 +1,10 @@
+// taskbar.js — taskbar for pawprntos
+// bottom taskbar with app buttons, clock, and window tracking
+
+// track open windows by app key
 const OPEN = {};
 
+// opens an app and tracks its window in the taskbar
 function openApp(key, opts) {
   const app = APPS[key];
   const w = app.open(opts);
@@ -10,6 +15,7 @@ function openApp(key, opts) {
   return w;
 }
 
+// updates taskbar button states (active, has windows)
 function syncTaskbar() {
   const focused = WM.focusedEl ? WM.focusedEl() : null;
   document.querySelectorAll(".task-btn").forEach((btn) => {
@@ -20,6 +26,7 @@ function syncTaskbar() {
   });
 }
 
+// initializes the taskbar with app buttons and clock
 function initTaskbar() {
   const bar = document.getElementById("taskbar");
   bar.textContent = "";
