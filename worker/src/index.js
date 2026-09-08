@@ -4,6 +4,7 @@ const YT_URL = "https://music.youtube.com/youtubei/v1/search";
 const YT_CLIENT = { clientName: "WEB_REMIX", clientVersion: "1.20250220.01.00", hl: "en" };
 const YT_SONGS_PARAMS = "EgWKAQIIAWoMEA4QChADEAQQCRAF";
 const ALLOWED_ORIGINS = new Set([
+  "https://pawprnt.pages.dev",
   "https://pawprnt.github.io",
   "http://127.0.0.1:8080",
   "http://localhost:8080",

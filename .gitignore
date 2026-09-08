@@ -3,7 +3,11 @@ node_modules/
 # -- cloudflare -- #
 /worker/.wrangler/
 .dev.vars
+.wrangler/
 __pycache__/
 
 # -- editor junk -- #
 *.kate-swp
+
+# -- file manager -- #
+.hidden
