@@ -4,6 +4,12 @@
 // NOTE: loads last via sequential loader
 // DOM is already ready — no DOMContentLoaded needed
 
+// block mobile until we implement it (flag is set by the gate in index.html,
+// which runs before any of this)
+if (window.PAWPRNTOS_BLOCKED) {
+  throw new Error("mobile blocked");
+}
+
 try { applySettings(); } catch (e) { console.error("[main] settings failed:", e); }
 try { applyWallpaper(savedWallpaper() || "forest"); } catch (e) { console.error("[main] wallpaper failed:", e); }
 

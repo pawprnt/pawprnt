@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Syntax check every script
+        run: |
+          fail=0
+          while IFS= read -r f; do
+            if ! node --check "$f" 2>/tmp/err; then
+              echo "::error file=$f::$(cat /tmp/err | head -3)"
+              fail=1
+            fi
+          done < <(find static/js worker/src -name '*.js' | sort)
+          exit $fail
+
+      - name: Worker modules parse
+        run: |
+          for f in $(find worker/src -name '*.js' | sort); do
+            node --input-type=module --check < "$f" || exit 1
+          done
+
+      - name: Every local asset referenced by index.html exists
+        run: |
+          fail=0
+          grep -oE '(src|href)="[^"]+"' index.html | sed -E 's/.*="([^"]+)"/\1/' \
+            | grep -vE '^(https?:|//|data:|#)' | sort -u | while read -r ref; do
+              if [ ! -e "$ref" ]; then
+                echo "::error file=index.html::missing asset $ref"
+                fail=1
+              fi
+            done
+          exit $fail
+
+      - name: No stray wrangler credentials committed
+        run: |
+          if git ls-files | grep -qE '\.dev\.vars$'; then
+            echo "::error::.dev.vars must never be committed"
+            exit 1
+          fi
+
+      - name: Worker secrets are placeholders only
+        run: |
+          if [ -f worker/.dev.vars ]; then
+            echo "::error::worker/.dev.vars is present in the tree"
+            exit 1
+          fi
+          test -f worker/.dev.vars.example
+
+  worker-dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Wrangler validates the Worker config
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: worker
+          command: deploy --dry-run

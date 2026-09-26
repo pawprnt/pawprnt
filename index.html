@@ -47,6 +47,28 @@
     <div id="taskbar"></div>
   </main>
 
+  <!-- Mobile gate. Runs before any app script so the OS never initialises on a
+       phone: the flag is set here, #desktop is hidden, and main.js bails. -->
+  <script>
+    window.PAWPRNTOS_BLOCKED =
+      window.matchMedia("(max-width: 768px)").matches ||
+      /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (window.PAWPRNTOS_BLOCKED) {
+      document.addEventListener("DOMContentLoaded", function () {
+        var boot = document.getElementById("boot");
+        if (boot) {
+          boot.innerHTML =
+            '<div style="position:absolute;inset:0;display:flex;align-items:center;' +
+            "justify-content:center;font-family:monospace;font-size:1.2rem;color:#888;" +
+            'text-align:center;padding:40px;line-height:1.6;">pawprntos is not ' +
+            "supported on mobile yet.<br>please visit on a desktop browser.</div>";
+        }
+        var desktop = document.getElementById("desktop");
+        if (desktop) desktop.remove();
+      });
+    }
+  </script>
+
   <!-- Scripts (defer = parallel download, execute in order after DOM parse) -->
   <script defer src="static/js/core/filesystem.js"></script>
   <script defer src="static/js/core/helpers.js"></script>
