@@ -41,6 +41,7 @@ function initStatus(container) {
 
   let progressTimer = null;
   let clockTimer = null;
+  let ageTimer = null;
   let statusNow = null;
   let lastSong = null;
   let renderedSongId = null;
@@ -236,23 +237,75 @@ function initStatus(container) {
       '<div style="color:var(--dim);font-size:.82rem">no music playing right now</div>');
   }
 
-  // age in whole years from dob, recomputed live on every render
-  function liveAge() {
-    const dob = new Date(2010, 2, 28);
-    const now = new Date();
-    let age = now.getFullYear() - dob.getFullYear();
-    if (now.getMonth() < dob.getMonth() ||
-      (now.getMonth() === dob.getMonth() && now.getDate() < dob.getDate())) {
-      age--;
-    }
-    return age;
+  // fractional age in years from dob (03.28.2010), ticking live
+  const AGE_DOB = new Date(2010, 2, 28).getTime();
+  const AGE_YEAR_MS = 365.25 * 24 * 3600 * 1000;
+  function ageYears() {
+    return (Date.now() - AGE_DOB) / AGE_YEAR_MS;
+  }
+
+  function ageCard() {
+    const card = makeCard(null,
+      '<div class="st-age-line">im <span class="st-age-num"></span> years old</div>' +
+      '<div class="st-bio-line">the early years are always the best, sometimes i wish i could go back</div>');
+    card.classList.add("st-age");
+    const num = card.querySelector(".st-age-num");
+    const tick = () => { num.textContent = ageYears().toFixed(4); };
+    tick();
+    ageTimer = setInterval(tick, 1000);
+    return card;
   }
 
   function bioCard() {
-    return makeCard("hi",
-      '<div class="st-bio-line">hi! im known online as niko86c</div>' +
-      '<div class="st-bio-line">im ' + liveAge() + ' years old</div>' +
-      '<div class="st-bio-line">the early years are always the best, wish i could go back</div>');
+    const card = makeCard("hi",
+      '<div class="st-bio-line">hi! im known online as <span class="st-name-link">niko86c</span>.</div>');
+    card.classList.add("st-hi");
+    card.querySelector(".st-name-link").addEventListener("click", openNameDoc);
+    return card;
+  }
+
+  function shyCard() {
+    const card = makeCard(null,
+      '<div class="st-bio-line"><b>i can be quite shy</b>, maybe even reserved/ standoffish at first, but the more i get to know you the more i open up</div>');
+    card.classList.add("st-shy");
+    return card;
+  }
+
+  // markdown doc behind the niko86c name link
+  const NAME_MD = `# why did i chose niko86c?
+
+if you dont know, niko is the main character from [oneshot](https://store.steampowered.com/app/420530/OneShot/)
+
+the whole theme and idea of the game is you only get **ONE SHOT**, hence the name being literally 'oneshot'
+
+### why 86c?
+two reasons;
+- for one, '86' is slang for throwing something out, at many points in the game you are told to simply give up, throw it all away and forget about it.
+- for two, '86c' is something i feel like is fairly unpopular, therefore making it a decent username because there wouldn't be much competition
+
+## other
+other than the two reasons above, ive just felt like its time for a new username because of external factors *(cyberstalking, harrassment, etc..)*`;
+
+  // opens the niko86c doc in a small window
+  function openNameDoc() {
+    const w = WM.makeWin({
+      title: "niko86c",
+      width: 480,
+      height: 440,
+    });
+    w.bodyEl.innerHTML =
+      '<div style="padding:14px 16px;height:100%;overflow-y:auto;user-select:text">' +
+      '<article class="wiki-md">' + mdToHtml(NAME_MD) + "</article></div>";
+    return w;
+  }
+
+  // hometown is redacted: blurred stand-in with the same shape as the real one
+  function locationCard() {
+    const card = makeCard(null,
+      '<div class="st-bio-line"><b>i come from the smack dab middle of minnesota</b>, but i currently live in ' +
+      '<span class="st-blur">saint croix falls</span>, wisconsin, the place of cheese!</div>');
+    card.classList.add("st-loc");
+    return card;
   }
 
   function renderRight(d, lf) {
@@ -353,7 +406,16 @@ function initStatus(container) {
   statusCard();
   left.appendChild(linksCard());
   left.appendChild(notifyCard());
-  bioCol.appendChild(bioCard());
+  const bioCols = el("div", "st-bio-cols");
+  const bioLeft = el("div", "st-bio-stack");
+  bioLeft.appendChild(locationCard());
+  bioLeft.appendChild(ageCard());
+  const bioRight = el("div", "st-bio-stack");
+  bioRight.appendChild(bioCard());
+  bioRight.appendChild(shyCard());
+  bioCols.appendChild(bioLeft);
+  bioCols.appendChild(bioRight);
+  bioCol.appendChild(bioCols);
   render();
   statusSubs.add(render);
   const check = setInterval(() => {
@@ -362,6 +424,7 @@ function initStatus(container) {
       statusSubs.delete(render);
       if (progressTimer) clearInterval(progressTimer);
       if (clockTimer) clearInterval(clockTimer);
+      if (ageTimer) clearInterval(ageTimer);
       return;
     }
   }, 1500);

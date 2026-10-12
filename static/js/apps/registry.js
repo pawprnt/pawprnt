@@ -58,7 +58,7 @@ const APPS = {
     open: () => {
       const w = WM.makeWin({
         title: "about - pawprnt",
-        width: 1040,
+        width: 1320,
         height: 620,
         noPad: true,
       });
