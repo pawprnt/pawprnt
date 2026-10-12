@@ -36,6 +36,8 @@ function initStatus(container) {
   const lyricsBox = el("div", "st-card st-lyrics");
   lyricsBox.style.display = "none";
   musicCol.appendChild(lyricsBox);
+  const bioCol = el("div", "st-bio-col");
+  rightInner.appendChild(bioCol);
 
   let progressTimer = null;
   let clockTimer = null;
@@ -148,13 +150,14 @@ function initStatus(container) {
     const socials = [
       ["discord", "Discord", "https://discord.com/users/1180659671057571860"],
       ["email", "Email", "mailto:foxinwinter@outlook.com"],
-      ["bluesky", "Bluesky", "https://bsky.app/profile/foxinwntr.bsky.social"],
-      ["twitter", "Twitter", "https://x.com/foxinwinter"],
+      ["bluesky", "Bluesky", "https://bsky.app/profile/niko86c.bsky.social"],
+      ["twitter", "Twitter", "https://x.com/niko86c"],
       ["steam", "Steam", "https://steamcommunity.com/id/foxinwntr"],
     ];
     const forges = [
-      ["github", "GitHub", "https://github.com/foxinwinter"],
-      ["github", "Pawprnt", "https://github.com/pawprnt"],
+      ["github", "niko86c", "https://github.com/niko86c"],
+      ["github", "pawprnt", "https://github.com/pawprnt"],
+      ["github", "pLabs5", "https://github.com/pLabs5"],
     ];
     const li = (i) => {
       const ico = STATUS_ICO[i[0]];
@@ -231,6 +234,25 @@ function initStatus(container) {
   function idleCard() {
     return makeCard("music",
       '<div style="color:var(--dim);font-size:.82rem">no music playing right now</div>');
+  }
+
+  // age in whole years from dob, recomputed live on every render
+  function liveAge() {
+    const dob = new Date(2010, 2, 28);
+    const now = new Date();
+    let age = now.getFullYear() - dob.getFullYear();
+    if (now.getMonth() < dob.getMonth() ||
+      (now.getMonth() === dob.getMonth() && now.getDate() < dob.getDate())) {
+      age--;
+    }
+    return age;
+  }
+
+  function bioCard() {
+    return makeCard("hi",
+      '<div class="st-bio-line">hi! im known online as niko86c</div>' +
+      '<div class="st-bio-line">im ' + liveAge() + ' years old</div>' +
+      '<div class="st-bio-line">the early years are always the best, wish i could go back</div>');
   }
 
   function renderRight(d, lf) {
@@ -331,6 +353,7 @@ function initStatus(container) {
   statusCard();
   left.appendChild(linksCard());
   left.appendChild(notifyCard());
+  bioCol.appendChild(bioCard());
   render();
   statusSubs.add(render);
   const check = setInterval(() => {

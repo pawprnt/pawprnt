@@ -39,36 +39,21 @@ function resolveAppName(name) {
   return null;
 }
 
-// finds an app launch target from path (/about), query (?app=about or ?about),
-// or hash (#about, #/about, #wiki/repo/page) — returns { key, opts } or null
+// finds an app launch target from the hash (#about, #/about, #wiki/repo/page)
+// returns { key, opts } or null
 function getLaunchApp() {
-  const params = new URLSearchParams(window.location.search);
-  const q = resolveAppName(params.get("app"));
-  if (q) return { key: q };
-  for (const name of params.keys()) {
-    const k = resolveAppName(name);
-    if (k) return { key: k };
-  }
-  const path = window.location.pathname.replace(/^\/+|\/+$/g, "");
-  if (path && !path.includes("/")) {
-    const k = resolveAppName(decodeURIComponent(path));
-    if (k) return { key: k };
-  }
   const hash = window.location.hash.replace(/^#\/?/, "");
-  if (hash) {
-    const parts = hash.split("/");
-    const k = resolveAppName(parts[0]);
-    if (k) {
-      if (k === "wiki") {
-        return { key: k, opts: { repo: parts[1] || null, page: parts.slice(2).join("/") || null } };
-      }
-      return { key: k };
-    }
+  if (!hash) return null;
+  const parts = hash.split("/");
+  const k = resolveAppName(parts[0]);
+  if (!k) return null;
+  if (k === "wiki") {
+    return { key: k, opts: { repo: parts[1] || null, page: parts.slice(2).join("/") || null } };
   }
-  return null;
+  return { key: k };
 }
 
-// handles deep linking (e.g., /about, ?app=about, #about, #wiki/repo/page)
+// handles deep linking (e.g., #about, #wiki/repo/page)
 function handleDeepLink() {
   const target = getLaunchApp();
   if (!target || !APPS[target.key]) return;

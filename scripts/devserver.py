@@ -44,9 +44,6 @@ def watch():
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
-    # mirrors _redirects so pretty app paths work locally too
-    APP_PATHS = {"terminal", "files", "about", "projects", "wiki", "settings", "term", "repos", "set"}
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=ROOT, **kwargs)
 
@@ -96,12 +93,6 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         path = self.translate_path(self.path)
         if os.path.isfile(path) and path.endswith((".html", ".htm")):
             self.serve_html(path)
-            return
-
-        # pretty app path (e.g. /about) -> serve index.html like pages does
-        route = self.path.split("?", 1)[0].split("#", 1)[0].strip("/")
-        if route in self.APP_PATHS:
-            self.serve_html(os.path.join(ROOT, "index.html"))
             return
 
         super().do_GET()

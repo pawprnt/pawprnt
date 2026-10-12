@@ -35,6 +35,8 @@
 .st-col-right { display: flex; gap: 16px; align-items: flex-start; }
 .st-music-col { flex: 0 0 416px; min-width: 0; }
 .st-music-col .st-card { width: 100%; box-sizing: border-box; }
+.st-bio-col { flex: 0 0 260px; min-width: 0; }
+.st-bio-line { color: var(--muted); font-size: .82rem; line-height: 1.5; }
 
 .st-card {
   background: var(--win); border: 1px solid var(--win-border);
