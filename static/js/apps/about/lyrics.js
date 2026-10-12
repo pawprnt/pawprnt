@@ -40,10 +40,12 @@ const STATUS_ICO = {
   },
 };
 
-// extracts music activity from discord data (spotify or music.sh)
+// extracts music activity from discord data (spotify or any listening activity e.g. youtube music)
 function stMusic(d) {
   if (d.spotify) return d.spotify;
-  return (d.activities || []).find((a) => a.name === STATUS_MUSIC_APP && (a.details || a.state));
+  const acts = d.activities || [];
+  return acts.find((a) => a.type === 2 && (a.details || a.state)) ||
+    acts.find((a) => a.name === STATUS_MUSIC_APP && (a.details || a.state));
 }
 
 // fetches discord status from lanyard api

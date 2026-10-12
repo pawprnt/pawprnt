@@ -95,7 +95,6 @@ function openAdmin() {
             { name: "recent", url: WORKER_URL + "/" },
             { name: "art", url: WORKER_URL + "/?art=1&artist=juju3&song=Wasted+Summers" },
             { name: "lyrics", url: WORKER_URL + "/?lyrics=1&artist=juju3&song=Wasted+Summers" },
-            { name: "games", url: WORKER_URL + "/?games=1" },
           ];
           Promise.all(endpoints.map((e) => {
             const start = performance.now();

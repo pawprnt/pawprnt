@@ -35,7 +35,6 @@
 .st-col-right { display: flex; gap: 16px; align-items: flex-start; }
 .st-music-col { flex: 0 0 416px; min-width: 0; }
 .st-music-col .st-card { width: 100%; box-sizing: border-box; }
-.st-games-col { flex: 0 0 260px; overflow-y: auto; }
 
 .st-card {
   background: var(--win); border: 1px solid var(--win-border);
@@ -164,18 +163,6 @@
 .st-notify-status { font-size: .68rem; color: var(--dim); white-space: nowrap; }
 .st-notify-status.ok { color: var(--green); }
 .st-notify-status.err { color: var(--red); }
-
-.st-games-title { font-size: .72rem; color: var(--muted); margin-bottom: 6px; text-transform: lowercase; font-weight: 600; letter-spacing: .03em; }
-.st-games-hr { border: none; border-top: 1px solid var(--win-border); margin: 0 0 8px; }
-.st-games-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-.st-game { display: flex; position: relative; border-radius: 8px; overflow: hidden; transition: transform .2s, filter .2s; }
-.st-game a { display: flex; width: 100%; text-decoration: none; }
-.st-game img { width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 8px; transition: transform .2s; }
-.st-game-name { display: none; }
-.st-games-grid:hover .st-game { opacity: .4; filter: blur(2px); transition: opacity .2s, filter .2s; }
-.st-games-grid:hover .st-game:hover { opacity: 1; filter: none; transform: translateY(-4px); }
-.st-game:hover { z-index: 1; }
-.st-game:hover img { transform: scale(1.03); }
 
 .admin {
   padding: 20px;

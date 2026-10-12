@@ -1,7 +1,6 @@
 import { json, getCors } from "./utils/cors.js";
 import { handleArt } from "./handlers/art.js";
 import { handleLyrics } from "./handlers/lyrics.js";
-import { handleGames } from "./handlers/games.js";
 import { handleNotify } from "./handlers/notify.js";
 import { handleRecent } from "./handlers/recent.js";
 import { handleAdmin } from "./handlers/admin.js";
@@ -21,9 +20,6 @@ export default {
     }
     if (url.searchParams.get("lyrics")) {
       return handleLyrics(url, env, cors);
-    }
-    if (url.searchParams.get("games")) {
-      return handleGames(request, env, cors);
     }
     if (url.searchParams.get("notify")) {
       return handleNotify(request, env, cors);

@@ -20,7 +20,7 @@ const enter = () => {
   try { handleDeepLink(); } catch (e) { console.error("[main] deeplink failed:", e); }
 };
 
-if (loadSettings().boot === false) {
+if (loadSettings().boot === false || getLaunchApp()) {
   enter();
 } else {
   runBoot(enter);
@@ -28,15 +28,52 @@ if (loadSettings().boot === false) {
 
 window.addEventListener("hashchange", handleDeepLink);
 
-// handles deep linking via URL hash (e.g., #wiki/repo/page)
-function handleDeepLink() {
+// resolves a url-friendly name (app key or display name) to an app key
+function resolveAppName(name) {
+  if (!name) return null;
+  const n = name.toLowerCase();
+  if (APPS[n]) return n;
+  for (const key of Object.keys(APPS)) {
+    if (APPS[key].name.toLowerCase() === n) return key;
+  }
+  return null;
+}
+
+// finds an app launch target from path (/about), query (?app=about or ?about),
+// or hash (#about, #/about, #wiki/repo/page) — returns { key, opts } or null
+function getLaunchApp() {
+  const params = new URLSearchParams(window.location.search);
+  const q = resolveAppName(params.get("app"));
+  if (q) return { key: q };
+  for (const name of params.keys()) {
+    const k = resolveAppName(name);
+    if (k) return { key: k };
+  }
+  const path = window.location.pathname.replace(/^\/+|\/+$/g, "");
+  if (path && !path.includes("/")) {
+    const k = resolveAppName(decodeURIComponent(path));
+    if (k) return { key: k };
+  }
   const hash = window.location.hash.replace(/^#\/?/, "");
-  if (!hash.startsWith("wiki")) return;
-  const parts = hash.split("/").slice(1);
-  const repo = parts[0] || null;
-  const page = parts.slice(1).join("/") || null;
+  if (hash) {
+    const parts = hash.split("/");
+    const k = resolveAppName(parts[0]);
+    if (k) {
+      if (k === "wiki") {
+        return { key: k, opts: { repo: parts[1] || null, page: parts.slice(2).join("/") || null } };
+      }
+      return { key: k };
+    }
+  }
+  return null;
+}
+
+// handles deep linking (e.g., /about, ?app=about, #about, #wiki/repo/page)
+function handleDeepLink() {
+  const target = getLaunchApp();
+  if (!target || !APPS[target.key]) return;
   setTimeout(() => {
-    openApp("wiki", { repo, page });
+    openApp(target.key, target.opts);
   }, 300);
 }
 

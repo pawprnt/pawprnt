@@ -1,5 +1,5 @@
 // about/index.js — about/status display for pawprntos
-// discord status, music, lyrics, games, and social links
+// discord status, music, lyrics, and social links
 
 // poll interval for status updates (10 seconds)
 const STATUS_POLL_MS = 10000;
@@ -36,8 +36,6 @@ function initStatus(container) {
   const lyricsBox = el("div", "st-card st-lyrics");
   lyricsBox.style.display = "none";
   musicCol.appendChild(lyricsBox);
-  const gamesCol = el("div", "st-games-col");
-  rightInner.appendChild(gamesCol);
 
   let progressTimer = null;
   let clockTimer = null;
@@ -230,42 +228,6 @@ function initStatus(container) {
     return c;
   }
 
-  function gamesCard() {
-    const card = el("div", "st-card st-games-card");
-    card.innerHTML =
-      '<div class="st-badge">games i like</div>' +
-      '<hr class="st-games-hr">' +
-      '<div class="st-games-grid st-games-main" style="color:var(--dim);font-size:.72rem">loading</div>';
-    const mainGrid = card.querySelector(".st-games-main");
-    const loadingTimer = animateLoading(mainGrid);
-    fetch(WORKER_URL + "/?games=1")
-      .then((r) => r.json())
-      .then((d) => {
-        clearInterval(loadingTimer);
-        function renderGame(g) {
-          const gameEl = el("div", "st-game");
-          const a = document.createElement("a");
-          a.href = g.steam_url || "#";
-          if (g.steam_url) a.target = "_blank";
-          a.rel = "noopener";
-          const img = document.createElement("img");
-          img.src = g.cover + "?size=128&keep_aspect_ratio=true";
-          img.alt = g.name;
-          img.title = g.name;
-          img.loading = "lazy";
-          a.appendChild(img);
-          gameEl.appendChild(a);
-          return gameEl;
-        }
-        const all = [...(d.favorite || []), ...(d.played || [])];
-        if (!all.length) { mainGrid.textContent = "none"; return; }
-        mainGrid.textContent = "";
-        all.forEach((g) => mainGrid.appendChild(renderGame(g)));
-      })
-      .catch(() => { clearInterval(loadingTimer); mainGrid.textContent = "couldn't reach discord :("; });
-    return card;
-  }
-
   function idleCard() {
     return makeCard("music",
       '<div style="color:var(--dim);font-size:.82rem">no music playing right now</div>');
@@ -369,7 +331,6 @@ function initStatus(container) {
   statusCard();
   left.appendChild(linksCard());
   left.appendChild(notifyCard());
-  gamesCol.appendChild(gamesCard());
   render();
   statusSubs.add(render);
   const check = setInterval(() => {
